@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Notes Download</title>
+<!-- Google Material Symbols (for icons) -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+<!-- Samarkan font -->
+<link href="https://fonts.googleapis.com/css2?family=Samarkan&display=swap" rel="stylesheet" />
+<style>
+  /* CSS Variables for themes */
+  :root {
+    --bg-color: #000000;
+    --text-color: #EEE;
+    --header-bg: #000000;
+    --nav-bg: #1F1F1F;
+    --subnav-bg: #111111;
+    --link-color: #EEE;
+    --link-hover-color: #FFF;
+    --btn-bg: #121212;
+    --btn-text-color: #eee;
+    --btn-hover-bg: #333;
+    --blur-icon-bg: #222;
+    --blur-icon-shadow: rgba(255, 255, 255, 0.2);
+    --menu-bg: #2a2a2a;
+  }
+  body.light-theme {
+    --bg-color: #f9f9f9;
+    --text-color: #121212;
+    --header-bg: #dedede;
+    --nav-bg: #e5e5e5;
+    --subnav-bg: #f2f2f2;
+    --link-color: #121212;
+    --link-hover-color: #333;
+    --btn-bg: #fff;
+    --btn-text-color: #121212;
+    --btn-hover-bg: #ccc;
+    --blur-icon-bg: #ddd;
+    --blur-icon-shadow: rgba(0, 0, 0, 0.15);
+    --menu-bg: #d6d6d6;
+  }
+
+  /* Reset and base */
+  body, html {
+    margin: 0; padding: 0; height: 100%;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--bg-color);
+    color: var(--text-color);
+    padding-top: 112px; /* 56 for header + 56 for subnav */
+    padding-bottom: 56px;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    transition: background-color 0.4s ease, color 0.4s ease, padding-top 0.3s ease, padding-bottom 0.3s ease;
+  }
+  a {
+    text-decoration: none;
+    color: var(--link-color);
+    cursor: pointer;
+    transition: color 0.3s ease;
+  }
+  a:hover {
+    color: var(--link-hover-color);
+    text-decoration: underline;
+  }
+
+  /* Material Symbols Icon style */
+  .material-symbols-outlined {
+    font-variation-settings:
+      'FILL' 0,
+      'wght' 600,
+      'GRAD' 0,
+      'opsz' 48;
+    vertical-align: middle;
+    user-select: none;
+    color: var(--link-color);
+    transition: color 0.4s ease;
+  }
+
+  /* Top Navigation */
+  header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 56px;
+    background: var(--header-bg);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.65);
+    z-index: 32;
+    padding: 0 1rem;
+    transition: background-color 0.4s ease;
+  }
+  .fullscreen header {
+    transform: translateY(-100%);
+    opacity: 0;
+    pointer-events: none;
+  }
+  header .logo-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+  }
+  header .logo-container svg, header .logo-container .material-symbols-outlined {
+    width: 28px;
+    height: 28px;
+    fill: var(--link-color);
+    color: var(--link-color);
+    user-select: none;
+    transition: transform 0.3s ease, color 0.4s ease;
+  }
+  header .logo-container:hover svg,
+  header .logo-container:hover .material-symbols-outlined {
+    color: var(--link-hover-color);
+    fill: var(--link-hover-color);
+  }
+
+  /* Site Navigation Bar under header */
+  nav#site-nav {
+    position: fixed;
+    top: 56px;
+    left: 0;
+    width: 100%;
+    height: 56px;
+    background: var(--subnav-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2.5rem;
+    box-shadow: inset 0 -2px 3px rgba(0,0,0,0.3);
+    z-index: 31;
+    transition: background-color 0.4s ease, transform 0.3s ease, opacity 0.3s ease;
+  }
+  .fullscreen nav#site-nav {
+    transform: translateY(-100%);
+    opacity: 0;
+    pointer-events: none;
+  }
+  nav#site-nav a {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--link-color);
+    text-transform: uppercase;
+    padding: 0.5rem 0;
+    border-bottom: 3px solid transparent;
+    transition: border-color 0.3s ease, color 0.3s ease;
+    cursor: pointer;
+  }
+  nav#site-nav a:hover,
+  nav#site-nav a.active {
+    border-bottom-color: #0b3d91;
+    color: var(--link-hover-color);
+  }
+
+  /* Bottom Navigation */
+  nav#bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 56px;
+    background: var(--nav-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    box-shadow: 0 -1px 8px rgba(0,0,0,0.8);
+    z-index: 20;
+    transition: background-color 0.4s ease, transform 0.3s ease, opacity 0.3s ease;
+  }
+  .fullscreen nav#bottom-nav {
+    transform: translateY(100%);
+    opacity: 0;
+    pointer-events: none;
+  }
+  nav#bottom-nav a {
+    color: var(--link-color);
+    font-weight: 600;
+    font-size: 1.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    transition: color 0.3s ease;
+  }
+  nav#bottom-nav a:hover {
+    color: var(--link-hover-color);
+  }
+
+  /* The blue icon next to bottom navigation */
+  #bottom-blue-icon {
+    position: fixed;
+    bottom: 70px;
+    right: 16px;
+    width: 44px;
+    height: 44px;
+    background: #0b3d91;
+    border-radius: 50%;
+    box-shadow: 0 0 12px #0b3d91aa;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    transition: background-color 0.3s ease;
+  }
+  #bottom-blue-icon:hover {
+    background: #084284;
+  }
+  #bottom-blue-icon .material-symbols-outlined {
+    font-size: 24px;
+    color: white;
+  }
+
+  /* Bottom blue icon expandable menu */
+  #blue-expand-menu {
+    position: fixed;
+    bottom: 120px;
+    right: 16px;
+    background: var(--menu-bg);
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.9);
+    padding: 0.5rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    opacity: 0;
+    transform: translateY(10px);
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease, background-color 0.4s ease;
+    z-index: 55;
+  }
+  #blue-expand-menu.open {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+  #blue-expand-menu button {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--link-color);
+    font-size: 28px;
+    padding: 0;
+    border-radius: 8px;
+    transition: background-color 0.3s ease, color 0.4s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #blue-expand-menu button:hover {
+    background: rgba(255,255,255,0.15);
+  }
+
+  /* Blur icon next to bottom nav */
+  #blur-icon {
+    position: fixed;
+    bottom: 8px;
+    right: 12px;
+    width: 40px;
+    height: 40px;
+    background: var(--blur-icon-bg);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--blur-icon-shadow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: grab;
+    z-index: 60;
+    user-select: none;
+    touch-action: none;
+    transition: box-shadow 0.3s ease, background-color 0.4s ease;
+  }
+  #blur-icon:active {
+    cursor: grabbing;
+    box-shadow: 0 0 20px #0b3d91aa;
+    background: #0b3d91;
+  }
+  #blur-icon .material-symbols-outlined {
+    font-size: 24px;
+    color: var(--link-color);
+    user-select: none;
+    pointer-events: none;
+  }
+
+  /* Main container */
+  main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 1.5rem;
+    background: var(--btn-bg);
+    box-shadow:
+      0 8px 16px rgba(0,0,0,0.1);
+    border-radius: 10px;
+    min-height: calc(100vh - 168px); /* Account for two fixed bars plus bottom nav */
+    box-sizing: border-box;
+    color: var(--btn-text-color);
+    transition: background-color 0.4s ease, color 0.4s ease, margin-top 0.3s ease, margin-bottom 0.3s ease;
+    margin-bottom: 56px;
+  }
+  .fullscreen main {
+    margin-top: 8px;
+    margin-bottom: 8px;
+  }
+
+  /* Section style for grouped notes */
+  .note-section {
+    margin-bottom: 2.5rem;
+  }
+  .note-section h3 {
+    margin: 0 0 1rem 0;
+    font-weight: 700;
+    font-size: 1.4rem;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 0.3rem;
+    color: var(--btn-text-color);
+  }
+
+  /* Notes list styles in sections */
+  .section-notes-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .section-notes-list li {
+    border-bottom: 1px solid #ddd;
+    padding: 1rem 0;
+    font-size: 1.1rem;
+    transition: background-color 0.2s ease;
+  }
+  .section-notes-list li:last-child {
+    border-bottom: none;
+  }
+  .section-notes-list li:hover {
+    background-color: #eee6;
+  }
+  .section-notes-list li a {
+    color: var(--btn-text-color);
+    font-weight: 600;
+    display: block;
+  }
+
+  /* Download page styles */
+  #download-page {
+    display: none;
+  }
+  #download-page h2 {
+    margin-top: 0;
+    font-weight: 700;
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    color: var(--btn-text-color);
+  }
+  #download-page p {
+    font-size: 1rem;
+    margin-bottom: 2rem;
+    color: var(--btn-text-color);
+    opacity: 0.8;
+  }
+  #download-btn {
+    background: var(--btn-bg);
+    color: var(--btn-text-color);
+    font-weight: 700;
+    padding: 0.8rem 1.8rem;
+    border: none;
+    border-radius: 20px;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow:
+      0 8px 24px rgba(0,0,0,0.3),
+      inset 0 -4px 8px rgba(0,0,0,0.2);
+    transition: background-color 0.3s ease, color 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  #download-btn:hover:enabled {
+    background: #0b3d91;
+    color: white;
+    box-shadow:
+      0 8px 24px rgba(11, 61, 145, 0.7),
+      inset 0 -4px 8px rgba(11, 61, 145, 0.6);
+  }
+  #download-btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+  #back-btn {
+    margin-top: 2rem;
+    display: inline-block;
+    font-size: 0.9rem;
+    color: var(--btn-text-color);
+    border: 1px solid var(--btn-text-color);
+    padding: 0.4rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    background: transparent;
+  }
+  #back-btn:hover {
+    background-color: var(--btn-text-color);
+    color: var(--btn-bg);
+  }
+
+  /* Progress bar container */
+  #progress-bar-container {
+    width: 100%;
+    height: 12px;
+    background: var(--btn-text-color);
+    border-radius: 14px;
+    margin-top: 1.2rem;
+    overflow: hidden;
+    box-shadow:
+      inset 0 1px 3px rgba(0,0,0,0.1),
+      0 2px 6px rgba(0,0,0,0.05);
+  }
+  /* Progress filler bar */
+  #progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #0b3d91 0%, #084284 70%, #0b3d91 100%);
+    border-radius: 14px 0 0 14px;
+    width: 0;
+    transition: width 0.3s ease;
+    box-shadow:
+      inset 0 0 8px rgba(255, 255, 255, 0.8),
+      0 2px 4px rgba(11, 61, 145, 0.8);
+  }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    main {
+      margin: 0.5rem;
+      padding: 1rem;
+    }
+    .section-notes-list li {
+      font-size: 1rem;
+      padding: 0.8rem 0;
+    }
+    #download-btn {
+      width: 100%;
+      font-size: 1.1rem;
+    }
+    #back-btn {
+      width: 100%;
+      text-align: center;
+    }
+    nav#bottom-nav a {
+      gap: 0.1rem;
+      font-size: 1.3rem;
+      margin: 0 1rem;
+    }
+    nav#site-nav {
+      gap: 1rem;
+    }
+    nav#site-nav a {
+      font-size: 1rem;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo-container" aria-label="Drive icon and toggle theme" tabindex="0" role="button" aria-pressed="false" title="Toggle theme">
+    <!-- Drive icon from Material Symbols -->
+    <span class="material-symbols-outlined" aria-hidden="true">drive_folder</span>
+  </div>
+</header>
+
+<nav id="site-nav" aria-label="Site navigation">
+  <a href="#" id="nav-1" role="link" tabindex="0">Home</a>
+  <a href="#" id="nav-2" role="link" tabindex="0">Notes</a>
+  <a href="#" id="nav-3" role="link" tabindex="0">Download</a>
+  <a href="#" id="nav-4" role="link" tabindex="0">Settings</a>
+  <a href="#" id="nav-5" role="link" tabindex="0">Info</a>
+</nav>
+
+<main>
+  <section id="content-page" aria-label="Notes Content">
+    <!-- Notes will be sectioned by tens -->
+  </section>
+
+  <section id="download-page" aria-live="polite" aria-atomic="true">
+    <h2 id="note-title"></h2>
+    <p id="note-description">Click the button below to download your note.</p>
+    <button id="download-btn" disabled aria-live="polite" aria-atomic="true" aria-busy="false">Download PDF</button>
+    <div id="progress-bar-container" aria-hidden="true" style="display:none;">
+      <div id="progress-bar"></div>
+    </div>
+    <button id="back-btn" aria-label="Back to notes list">← Back to Notes</button>
+  </section>
+</main>
+
+<nav id="bottom-nav" aria-label="Bottom navigation">
+  <a href="#" id="nav-home-link" aria-label="Home"><span class="material-symbols-outlined" aria-hidden="true">home</span></a>
+  <a href="#" id="nav-notes-link" aria-label="Notes"><span class="material-symbols-outlined" aria-hidden="true">article</span></a>
+</nav>
+
+<div id="bottom-blue-icon" title="Open quick menu" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false" aria-controls="blue-expand-menu" aria-label="Open quick menu">
+  <span class="material-symbols-outlined" aria-hidden="true">add</span>
+</div>
+
+<!-- Bottom blue icon expandable menu -->
+<div id="blue-expand-menu" role="menu" aria-label="Quick actions">
+  <button type="button" aria-label="Home" title="Home" class="menu-item">
+    <span class="material-symbols-outlined" aria-hidden="true">home</span>
+  </button>
+  <button type="button" aria-label="Notes" title="Notes" class="menu-item">
+    <span class="material-symbols-outlined" aria-hidden="true">article</span>
+  </button>
+  <button type="button" aria-label="Download" title="Download" class="menu-item">
+    <span class="material-symbols-outlined" aria-hidden="true">download</span>
+  </button>
+  <button type="button" aria-label="Settings" title="Settings" class="menu-item">
+    <span class="material-symbols-outlined" aria-hidden="true">settings</span>
+  </button>
+  <button type="button" aria-label="Info" title="Info" class="menu-item">
+    <span class="material-symbols-outlined" aria-hidden="true">info</span>
+  </button>
+</div>
+
+<div id="blur-icon" title="Blur Icon (Drag to fullscreen)" tabindex="0" role="button" aria-label="Toggle fullscreen by swipe" aria-describedby="blur-instruction">
+  <span class="material-symbols-outlined" aria-hidden="true">blur_on</span>
+</div>
+<div style="position: fixed; bottom: 50px; right: 60px; color:#bbb; font-size: 12px; user-select:none;" id="blur-instruction">
+  Hold and swipe ← on the blur icon to enter fullscreen
+</div>
+
+<script>
+  // Notes data
+  const notes = [];
+  for(let i=1; i<=50; i++) {
+    notes.push({
+      id: i,
+      title: 'Note ' + i,
+      description: 'Description for Note ' + i,
+      pdfLink: '#' // Placeholder
+    });
+  }
+
+  const contentPage = document.getElementById('content-page');
+  const downloadPage = document.getElementById('download-page');
+  const noteTitleElem = document.getElementById('note-title');
+  const noteDescElem = document.getElementById('note-description');
+  const downloadBtn = document.getElementById('download-btn');
+  const backBtn = document.getElementById('back-btn');
+  const progressBarContainer = document.getElementById('progress-bar-container');
+  const progressBar = document.getElementById('progress-bar');
+
+  const navHomeLink = document.getElementById('nav-home-link');
+  const navNotesLink = document.getElementById('nav-notes-link');
+
+  const logoContainer = document.querySelector('header .logo-container');
+
+  const bottomBlueIcon = document.getElementById('bottom-blue-icon');
+  const blueExpandMenu = document.getElementById('blue-expand-menu');
+
+  const blurIcon = document.getElementById('blur-icon');
+
+  let fullscreen = false;
+  let darkTheme = true;
+
+  // Build notes sections
+  function buildNotesSections() {
+    contentPage.innerHTML = '';
+    const groupSize = 10;
+    for(let start=0; start < notes.length; start += groupSize) {
+      const section = document.createElement('section');
+      section.className = 'note-section';
+      const end = Math.min(start + groupSize, notes.length);
+      const heading = document.createElement('h3');
+      heading.textContent = `Notes ${start+1} - ${end}`;
+      section.appendChild(heading);
+
+      const ul = document.createElement('ul');
+      ul.className = 'section-notes-list';
+
+      for(let i = start; i < end; i++) {
+        const note = notes[i];
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.textContent = note.title;
+        a.href = '#';
+        a.setAttribute('data-id', note.id);
+        a.addEventListener('click', (e) => {
+          e.preventDefault();
+          openDownloadPage(note.id);
+          closeBlueExpandMenu();
+        });
+        li.appendChild(a);
+        ul.appendChild(li);
+      }
+      section.appendChild(ul);
+      contentPage.appendChild(section);
+    }
+  }
+
+  function openDownloadPage(noteId) {
+    const note = notes.find(n => n.id === noteId);
+    if (!note) return;
+    noteTitleElem.textContent = note.title;
+    noteDescElem.textContent = note.description || 'Click the button below to download your note.';
+    progressBarContainer.style.display = 'none';
+    progressBar.style.width = '0%';
+    downloadBtn.disabled = !note.pdfLink || note.pdfLink === '#';
+    downloadBtn.setAttribute('aria-busy', 'false');
+    downloadBtn.textContent = 'Download PDF';
+    downloadBtn.onclick = null;
+
+    if(!downloadBtn.disabled) {
+      downloadBtn.onclick = () => {
+        startFakeDownload(note.pdfLink);
+      };
+    }
+    contentPage.style.display = 'none';
+    downloadPage.style.display = 'block';
+    window.scrollTo(0, 0);
+  }
+
+  function startFakeDownload(pdfLink) {
+    let progress = 0;
+    downloadBtn.disabled = true;
+    downloadBtn.setAttribute('aria-busy', 'true');
+    progressBarContainer.style.display = 'block';
+    progressBar.style.width = '0%';
+    downloadBtn.textContent = 'Downloading...';
+
+    const interval = setInterval(() => {
+      progress += Math.random()*10 + 5;
+      if(progress >= 100) {
+        progress = 100;
+        clearInterval(interval);
+        progressBar.style.width = '100%';
+        downloadBtn.textContent = 'Download Complete';
+        downloadBtn.setAttribute('aria-busy', 'false');
+        setTimeout(() => {
+          window.open(pdfLink, '_blank');
+          downloadBtn.textContent = 'Download PDF';
+          downloadBtn.disabled = false;
+          progressBarContainer.style.display = 'none';
+          progressBar.style.width = '0%';
+        }, 800);
+      } else {
+        progressBar.style.width = progress + '%';
+      }
+    }, 200);
+  }
+
+  backBtn.addEventListener('click', () => {
+    downloadPage.style.display = 'none';
+    contentPage.style.display = 'block';
+    window.scrollTo(0, 0);
+    closeBlueExpandMenu();
+  });
+
+  navHomeLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    downloadPage.style.display = 'none';
+    contentPage.style.display = 'block';
+    window.scrollTo(0, 0);
+    closeBlueExpandMenu();
+  });
+  navNotesLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    downloadPage.style.display = 'none';
+    contentPage.style.display = 'block';
+    window.scrollTo(0, 0);
+    closeBlueExpandMenu();
+  });
+
+  // Theme toggle function on logo click - toggle just dark and light theme
+  function toggleTheme() {
+    darkTheme = !darkTheme;
+    if(darkTheme) {
+      document.body.classList.remove('light-theme');
+    } else {
+      document.body.classList.add('light-theme');
+    }
+  }
+  logoContainer.addEventListener('click', () => {
+    toggleTheme();
+  });
+  logoContainer.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      toggleTheme();
+    }
+  });
+
+  // Blue bottom icon menu toggle
+  function toggleBlueExpandMenu() {
+    const isOpen = blueExpandMenu.classList.contains('open');
+    if(isOpen) {
+      closeBlueExpandMenu();
+    } else {
+      openBlueExpandMenu();
+    }
+  }
+  function openBlueExpandMenu() {
+    blueExpandMenu.classList.add('open');
+    bottomBlueIcon.setAttribute('aria-expanded', 'true');
+    document.addEventListener('click', onDocClickForBlue);
+  }
+  function closeBlueExpandMenu() {
+    blueExpandMenu.classList.remove('open');
+    bottomBlueIcon.setAttribute('aria-expanded', 'false');
+    document.removeEventListener('click', onDocClickForBlue);
+  }
+  function onDocClickForBlue(e) {
+    if (!blueExpandMenu.contains(e.target) && !bottomBlueIcon.contains(e.target)) {
+      closeBlueExpandMenu();
+    }
+  }
+  bottomBlueIcon.addEventListener('click', toggleBlueExpandMenu);
+  bottomBlueIcon.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      toggleBlueExpandMenu();
+    }
+  });
+
+  // Blue bottom menu buttons handling
+  blueExpandMenu.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      alert(`Clicked ${btn.getAttribute('aria-label')} from quick menu.`);
+      closeBlueExpandMenu();
+    });
+  });
+
+  // Swipe gesture handling on blur icon for fullscreen toggle
+  let isTouching = false;
+  let startX = 0;
+  let startY = 0;
+  let touchMoved = false;
+  function toggleFullscreenMode() {
+    fullscreen = !fullscreen;
+    if (fullscreen) {
+      document.body.classList.add('fullscreen');
+    } else {
+      document.body.classList.remove('fullscreen');
+    }
+  }
+  blurIcon.addEventListener('touchstart', e => {
+    if(e.touches.length === 1) {
+      isTouching = true;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      touchMoved = false;
+    }
+  }, {passive: true});
+  blurIcon.addEventListener('touchmove', e => {
+    if(!isTouching) return;
+    const currentX = e.touches[0].clientX;
+    const currentY = e.touches[0].clientY;
+    const diffX = startX - currentX;
+    const diffY = Math.abs(startY - currentY);
+    if(diffX > 30 && diffY < 30) {
+      touchMoved = true;
+    }
+  }, {passive: true});
+  blurIcon.addEventListener('touchend', e => {
+    if(isTouching && touchMoved) {
+      toggleFullscreenMode();
+    }
+    isTouching = false;
+    touchMoved = false;
+  });
+  // Mouse drag support for desktop
+  let mouseDown = false;
+  let mouseStartX = 0;
+  let mouseStartY = 0;
+  let mouseMoved = false;
+  blurIcon.addEventListener('mousedown', e => {
+    mouseDown = true;
+    mouseStartX = e.clientX;
+    mouseStartY = e.clientY;
+    mouseMoved = false;
+    e.preventDefault();
+  });
+  window.addEventListener('mousemove', e => {
+    if(!mouseDown) return;
+    const diffX = mouseStartX - e.clientX;
+    const diffY = Math.abs(mouseStartY - e.clientY);
+    if(diffX > 30 && diffY < 30) {
+      mouseMoved = true;
+    }
+  });
+  window.addEventListener('mouseup', e => {
+    if(mouseDown && mouseMoved) toggleFullscreenMode();
+    mouseDown = false;
+    mouseMoved = false;
+  });
+
+  // Initial population of notes sections
+  buildNotesSections();
+</script>
+</body>
+</html>
