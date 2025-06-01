@@ -530,13 +530,17 @@
 <script>
   // Notes data
   const notes = [];
-  for(let i=1; i<=50; i++) {
-    notes.push({
-      id: i,
-      title: 'Note ' + i,
-      description: 'Description for Note ' + i,
-      pdfLink: '#' // Placeholder
-    });
+  // Load notes from notes.json file
+  async function loadNotes() {
+    try {
+      const response = await fetch('notes.json');
+      if (!response.ok) throw new Error('Network response was not ok');
+      const data = await response.json();
+      return data.sections;
+    } catch (error) {
+      console.error('Failed to load notes.json:', error);
+      return null;
+    }
   }
 
   const contentPage = document.getElementById('content-page');
@@ -560,54 +564,37 @@
 
   let fullscreen = false;
   let darkTheme = true;
+  let downloadInterval = null;
 
   // Build notes sections
-  function buildNotesSections() {
+  function buildNotesSections(sections) {
     contentPage.innerHTML = '';
-    const groupSize = 10;
-    for(let start=0; start < notes.length; start += groupSize) {
-      const section = document.createElement('section');
-      section.className = 'note-section';
-      const end = Math.min(start + groupSize, notes.length);
+    sections.forEach(section => {
+      const sectionEl = document.createElement('section');
+      sectionEl.className = 'note-section';
       const heading = document.createElement('h3');
-      heading.textContent = `Notes ${start+1} - ${end}`;
-      section.appendChild(heading);
+      heading.textContent = section.name;
+      sectionEl.appendChild(heading);
 
       const ul = document.createElement('ul');
       ul.className = 'section-notes-list';
 
-      for(let i = start; i < end; i++) {
-        const note = notes[i];
+      section.notes.forEach(note => {
         const li = document.createElement('li');
         const a = document.createElement('a');
         a.textContent = note.title;
         a.href = '#';
-        a.setAttribute('data-id', note.id);
-        a.addEventListener('click', (e) => {
-          e.preventDefault();
-          openDownloadPage(note.id);
-          closeBlueExpandMenu();
-        });
-        li.appendChild(a);
-        ul.appendChild(li);
-      }
-      section.appendChild(ul);
-      contentPage.appendChild(section);
-    }
-  }
-
-  function openDownloadPage(noteId) {
-    const note = notes.find(n => n.id === noteId);
-    if (!note) return;
+        a.dataset.id = note.id;
+     function openDownloadPage(note) {
     noteTitleElem.textContent = note.title;
     noteDescElem.textContent = note.description || 'Click the button below to download your note.';
+    downloadProgressInfo.textContent = '';
     progressBarContainer.style.display = 'none';
     progressBar.style.width = '0%';
     downloadBtn.disabled = !note.pdfLink || note.pdfLink === '#';
     downloadBtn.setAttribute('aria-busy', 'false');
     downloadBtn.textContent = 'Download PDF';
     downloadBtn.onclick = null;
-
     if(!downloadBtn.disabled) {
       downloadBtn.onclick = () => {
         startFakeDownload(note.pdfLink);
@@ -619,35 +606,64 @@
   }
 
   function startFakeDownload(pdfLink) {
+    if(downloadInterval) clearInterval(downloadInterval);
     let progress = 0;
+    let totalSize = 10 * 1024 * 1024; // 10 MB dummy size
+    let downloaded = 0;
+    let downloadStartTime = performance.now();
     downloadBtn.disabled = true;
     downloadBtn.setAttribute('aria-busy', 'true');
     progressBarContainer.style.display = 'block';
+    downloadProgressInfo.textContent = 'Starting download...';
     progressBar.style.width = '0%';
-    downloadBtn.textContent = 'Downloading...';
 
-    const interval = setInterval(() => {
-      progress += Math.random()*10 + 5;
+    downloadInterval = setInterval(() => {
+      let now = performance.now();
+      let elapsedSec = (now - downloadStartTime) / 1000 || 0.001;
+      let randomBytes = (Math.random() * 800 + 200) * 1024 / 5; // bytes per 200ms tick
+      downloaded += randomBytes;
+      if(downloaded > totalSize) downloaded = totalSize;
+      progress = (downloaded / totalSize) * 100;
+
+      progressBar.style.width = `${progress}%`;
+
+      let speed = downloaded / elapsedSec; // B/s
+      let speedKBs = (speed / 1024).toFixed(1);
+      let remainingBytes = totalSize - downloaded;
+      let timeLeft = (remainingBytes / speed) || 0;
+      let mins = Math.floor(timeLeft / 60);
+      let secs = Math.floor(timeLeft % 60);
+      let timeStr = `${mins > 0 ? mins + 'm ' : ''}${secs}s`;
+
+      downloadProgressInfo.textContent = `Speed: ${speedKBs} KB/s | Time left: ${timeStr}`;
+
       if(progress >= 100) {
-        progress = 100;
-        clearInterval(interval);
+        clearInterval(downloadInterval);
         progressBar.style.width = '100%';
         downloadBtn.textContent = 'Download Complete';
         downloadBtn.setAttribute('aria-busy', 'false');
+        downloadProgressInfo.textContent = `Downloaded 10.0 MB in ${elapsedSec.toFixed(1)} seconds`;
         setTimeout(() => {
           window.open(pdfLink, '_blank');
           downloadBtn.textContent = 'Download PDF';
           downloadBtn.disabled = false;
           progressBarContainer.style.display = 'none';
           progressBar.style.width = '0%';
-        }, 800);
-      } else {
-        progressBar.style.width = progress + '%';
+          downloadProgressInfo.textContent = '';
+        }, 1200);
       }
     }, 200);
   }
 
   backBtn.addEventListener('click', () => {
+    if(downloadInterval) {
+      clearInterval(downloadInterval);
+      downloadProgressInfo.textContent = '';
+      progressBar.style.width = '0%';
+      downloadBtn.textContent = 'Download PDF';
+      downloadBtn.disabled = false;
+      progressBarContainer.style.display = 'none';
+    }
     downloadPage.style.display = 'none';
     contentPage.style.display = 'block';
     window.scrollTo(0, 0);
@@ -656,6 +672,14 @@
 
   navHomeLink.addEventListener('click', (e) => {
     e.preventDefault();
+    if(downloadInterval) {
+      clearInterval(downloadInterval);
+      downloadProgressInfo.textContent = '';
+      progressBar.style.width = '0%';
+      downloadBtn.textContent = 'Download PDF';
+      downloadBtn.disabled = false;
+      progressBarContainer.style.display = 'none';
+    }
     downloadPage.style.display = 'none';
     contentPage.style.display = 'block';
     window.scrollTo(0, 0);
@@ -663,11 +687,35 @@
   });
   navNotesLink.addEventListener('click', (e) => {
     e.preventDefault();
+    if(downloadInterval) {
+      clearInterval(downloadInterval);
+      downloadProgressInfo.textContent = '';
+      progressBar.style.width = '0%';
+      downloadBtn.textContent = 'Download PDF';
+      downloadBtn.disabled = false;
+      progressBarContainer.style.display = 'none';
+    }
     downloadPage.style.display = 'none';
     contentPage.style.display = 'block';
     window.scrollTo(0, 0);
     closeBlueExpandMenu();
-  });
+  });   a.dataset.description = note.description || '';
+        a.dataset.pdflink = note.pdfLink || '#';
+        a.addEventListener('click', e => {
+          e.preventDefault();
+          openDownloadPage(note);
+          closeBlueExpandMenu();
+        });
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+
+      sectionEl.appendChild(ul);
+      contentPage.appendChild(sectionEl);
+    });
+                           }
+  
+
 
   // Theme toggle function on logo click - toggle just dark and light theme
   function toggleTheme() {
@@ -793,7 +841,20 @@
   });
 
   // Initial population of notes sections
-  buildNotesSections();
+  // Init
+  async function init() {
+    try {
+      const res = await fetch('notes.json');
+      if(!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json();
+      buildNotesSections(json.sections);
+    } catch(e) {
+      console.error('Error loading notes.json', e);
+      // fallback or message:
+      contentPage.textContent = 'Failed to load notes.';
+    }
+  }
+  init();
 </script>
 </body>
 </html>
