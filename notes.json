@@ -1,9 +1,9 @@
 {
   "sections": [
     {
-      "name": "Mathematics",
+      "name": "UPSC",
       "notes": [
-        {"id": 1, "title": "Note 1", "description": "Description for Note 1", "pdfLink": "#"},
+        {"id": 1, "title": "Geo poltics", "description": "Structural and architectural function of all the essential to ones ethics and geographical political science ", "pdfLink": "https://drive.google.com/uc?export=download&id=1r7NSSZlcxDrKPcfbNmGIAokT5TDihs-N"},
         {"id": 2, "title": "Note 2", "description": "Description for Note 2", "pdfLink": "#"},
         {"id": 3, "title": "Note 3", "description": "Description for Note 3", "pdfLink": "#"},
         {"id": 4, "title": "Note 4", "description": "Description for Note 4", "pdfLink": "#"},
